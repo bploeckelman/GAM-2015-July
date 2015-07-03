@@ -1,9 +1,11 @@
 package com.lando.systems.July15GAM.utils;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -18,6 +20,9 @@ public class Assets {
 
     public static ShaderProgram defaultShader;
 
+    private static AssetManager assetManager;
+    public static  Model        skydomeModel;
+
     public static void load() {
         font = new BitmapFont();
         font.getData().markupEnabled = true;
@@ -27,11 +32,17 @@ public class Assets {
 
         testTexture = new Texture("badlogic.jpg");
 
+        assetManager = new AssetManager();
+        assetManager.load("models/skydome.g3db", Model.class);
+        assetManager.finishLoading();
+        skydomeModel = assetManager.get("models/skydome.g3db");
     }
 
     public static void dispose() {
         font.dispose();
         testTexture.dispose();
+        defaultShader.dispose();
+        assetManager.dispose();
     }
 
     private static ShaderProgram compileShaderProgram(FileHandle vertSource, FileHandle fragSource) {

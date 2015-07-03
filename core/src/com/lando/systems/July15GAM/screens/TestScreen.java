@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.lando.systems.July15GAM.July15GAM;
+import com.lando.systems.July15GAM.utils.Assets;
 
 /**
  * Brian Ploeckelman created on 5/10/2015.
@@ -43,6 +44,8 @@ public class TestScreen extends ScreenAdapter {
     Array<ModelInstance>  instances;
     Model                 cubeModel;
     float                 cubeRotAngle;
+    ModelInstance         skydomeTopInstance;
+    ModelInstance         skydomeBottomInstance;
 
     public TestScreen(July15GAM game) {
         batch = new SpriteBatch();
@@ -60,11 +63,14 @@ public class TestScreen extends ScreenAdapter {
         final ModelBuilder builder = new ModelBuilder();
         final Material cubeMaterial = new Material(materialColor);
         final long cubeAttrs = Usage.Position | Usage.Normal;
-
         cubeModel = builder.createBox(5f, 5f, 5f, cubeMaterial, cubeAttrs);
         final ModelInstance cubeInstance = new ModelInstance(cubeModel);
+
         instances = new Array<ModelInstance>();
         instances.add(cubeInstance);
+        skydomeTopInstance = new ModelInstance(Assets.skydomeModel);
+        skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
+        skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
 
         mouseScreenPos = new Vector3();
         mouseWorldPos = new Vector3();
@@ -103,6 +109,11 @@ public class TestScreen extends ScreenAdapter {
 
             modelBatch.begin(camera);
             modelBatch.render(instances, environment);
+
+            Gdx.gl.glDisable(GL20.GL_DEPTH_BUFFER_BIT);
+            modelBatch.render(skydomeTopInstance);
+            modelBatch.render(skydomeBottomInstance);
+            Gdx.gl.glEnable(GL20.GL_DEPTH_BUFFER_BIT);
             modelBatch.end();
         }
         sceneFrameBuffer.end();
@@ -141,6 +152,9 @@ public class TestScreen extends ScreenAdapter {
         }
         instances.first().transform.rotate(0f, 1f, 0f, cubeRotAngle);
         light.direction.set(10f * (mousePctX - 0.5f), -1f, 10f * (mousePctY - 0.5f));
+
+        skydomeTopInstance.transform.setTranslation(camera.position);
+        skydomeBottomInstance.transform.setTranslation(camera.position);
     }
 
     @Override
