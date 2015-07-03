@@ -1,27 +1,59 @@
 package com.lando.systems.July15GAM;
 
-import com.badlogic.gdx.ApplicationAdapter;
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenManager;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.lando.systems.July15GAM.accessors.*;
+import com.lando.systems.July15GAM.screens.TestScreen;
+import com.lando.systems.July15GAM.utils.Assets;
 
-public class July15GAM extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
-	
+public class July15GAM extends Game {
+
+	public TweenManager tween;
+
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		Assets.load();
+
+		tween = new TweenManager();
+		Tween.registerAccessor(Color.class, new ColorAccessor());
+		Tween.registerAccessor(Rectangle.class, new RectangleAccessor());
+		Tween.registerAccessor(Vector2.class, new Vector2Accessor());
+		Tween.registerAccessor(Vector3.class, new Vector3Accessor());
+
+		setScreen(new TestScreen(this));
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+		float delta = Gdx.graphics.getDeltaTime();
+		tween.update(delta);
+		super.render();
 	}
+
+	@Override
+	public void dispose() {
+		Assets.dispose();
+	}
+
+	public void exit() {
+		Gdx.app.exit();
+	}
+
+	// ------------------------------------------------------------------------
+	// Game Constants
+	// ------------------------------------------------------------------------
+
+	public static final int win_width = 640;
+	public static final int win_height = 480;
+	public static final float win_aspect = (float) win_width / (float) win_height;
+	public static final boolean win_resizeable = false;
+	public static final String win_title = "GAM - July 2015";
+	public static final int win_bgfps = 1;
+
 }
