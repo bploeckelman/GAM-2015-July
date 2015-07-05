@@ -19,6 +19,7 @@ public class Assets {
     public static Texture testTexture;
 
     public static ShaderProgram defaultShader;
+    public static ShaderProgram atmosphereShader;
 
     private static AssetManager assetManager;
     public static  Model        skydomeModel;
@@ -29,6 +30,8 @@ public class Assets {
 
         defaultShader = compileShaderProgram(Gdx.files.internal("shaders/default.vert"),
                                              Gdx.files.internal("shaders/default.frag"));
+        atmosphereShader = compileShaderProgram(Gdx.files.internal("shaders/passthru.vert"),
+                                                Gdx.files.internal("shaders/atmosphere.frag"));
 
         testTexture = new Texture("badlogic.jpg");
 
@@ -42,6 +45,7 @@ public class Assets {
         font.dispose();
         testTexture.dispose();
         defaultShader.dispose();
+        atmosphereShader.dispose();
         assetManager.dispose();
     }
 
