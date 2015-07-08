@@ -12,12 +12,14 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.ModelInfluencer;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.lando.systems.July15GAM.July15GAM;
@@ -40,15 +42,17 @@ public class TestScreen extends ScreenAdapter {
     CameraInputController camController;
     UserInterface         userInterface;
 
-    DirectionalLight      light;
+    PointLight            light;
     Vector3               lightDir;
     Color                 lightColor;
     Color                 ambientColor;
     ColorAttribute        materialColor;
     Array<ModelInstance>  instances;
     Model                 cubeModel;
-    float                 cubeRotAngle;
     Model                 planeModel;
+    Model                 sphereModel;
+    float                 cubeRotAngle;
+    float                 sphereRotAngle;
     ModelInstance         skydomeTopInstance;
     ModelInstance         skydomeBottomInstance;
 
@@ -59,7 +63,7 @@ public class TestScreen extends ScreenAdapter {
         materialColor = ColorAttribute.createDiffuse(1f, 1f, 1f, 1f);
         lightColor = new Color(1f, 0f, 0f, 1f);
         lightDir = new Vector3(0f, -1f, 0f);
-        light = new DirectionalLight().set(lightColor, lightDir);
+        light = new PointLight().set(lightColor, 0f, 5f, 0f, 20f);
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, ambientColor));
         environment.add(light);
@@ -67,12 +71,15 @@ public class TestScreen extends ScreenAdapter {
         // TODO: very temporary... just getting something in the scene for now
         final ModelBuilder builder = new ModelBuilder();
         final Material cubeMaterial = new Material(materialColor);
+        cubeMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
+        cubeMaterial.set(ColorAttribute.createSpecular(Color.WHITE));
         final long cubeAttrs = Usage.Position | Usage.Normal;
         cubeModel = builder.createBox(5f, 5f, 5f, cubeMaterial, cubeAttrs);
         final ModelInstance cubeInstance = new ModelInstance(cubeModel);
 
         final Material planeMaterial = new Material();
         planeMaterial.set(ColorAttribute.createAmbient(Color.WHITE));
+        planeMaterial.set(ColorAttribute.createSpecular(Color.WHITE));
         planeMaterial.set(TextureAttribute.createDiffuse(Assets.testTexture));
         final long planeAttrs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
         planeModel = builder.createRect(
@@ -85,9 +92,19 @@ public class TestScreen extends ScreenAdapter {
                 planeAttrs);
         final ModelInstance planeInstance = new ModelInstance(planeModel);
 
+        final Material sphereMaterial = new Material();
+        sphereMaterial.set(ColorAttribute.createAmbient(Color.YELLOW));
+        sphereMaterial.set(ColorAttribute.createDiffuse(Color.WHITE));
+        sphereMaterial.set(ColorAttribute.createReflection(Color.RED));
+        final long sphereAttrs = Usage.Position | Usage.Normal;
+        final float size = 0.5f;
+        sphereModel = builder.createSphere(size, size, size, 8, 8, sphereMaterial, sphereAttrs);
+        final ModelInstance sphereInstance = new ModelInstance(sphereModel);
+
         instances = new Array<ModelInstance>();
         instances.add(planeInstance);
         instances.add(cubeInstance);
+        instances.add(sphereInstance);
         skydomeTopInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
@@ -95,7 +112,7 @@ public class TestScreen extends ScreenAdapter {
         mouseScreenPos = new Vector3();
         mouseWorldPos = new Vector3();
 
-        sceneFrameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, July15GAM.win_width, July15GAM.win_height, false);
+        sceneFrameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, July15GAM.win_width, July15GAM.win_height, true);
         sceneRegion = new TextureRegion(sceneFrameBuffer.getColorBufferTexture());
         sceneRegion.flip(false, true);
 
@@ -163,13 +180,21 @@ public class TestScreen extends ScreenAdapter {
         final float mousePctY = mouseScreenPos.y / camera.viewportHeight;
         materialColor.color.set(mousePctX, mousePctY, (mousePctX + mousePctY) / 2f, 1f);
         instances.get(1).materials.get(0).set(materialColor);
+        instances.get(1).transform.setToTranslation(0f, 2.5f, 0f);
 
         cubeRotAngle += 10f * delta;
         if (cubeRotAngle > 1f) {
             cubeRotAngle -= 1f;
         }
         instances.first().transform.rotate(0f, 1f, 0f, cubeRotAngle);
-        light.direction.set(10f * (mousePctX - 0.5f), -1f, 10f * (mousePctY - 0.5f));
+
+        sphereRotAngle += 20f * delta;
+        if (sphereRotAngle > 360f) {
+            sphereRotAngle -= 360f;
+        }
+        final float dist = 5f;
+        light.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 6f, dist * MathUtils.sinDeg(sphereRotAngle));
+        instances.get(2).transform.setToTranslation(light.position);
 
         skydomeTopInstance.transform.setTranslation(camera.position);
         skydomeBottomInstance.transform.setTranslation(camera.position);
@@ -198,6 +223,7 @@ public class TestScreen extends ScreenAdapter {
         modelBatch.dispose();
         cubeModel.dispose();
         planeModel.dispose();
+        sphereModel.dispose();
         instances.clear();
         sceneFrameBuffer.dispose();
     }
