@@ -5,7 +5,9 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -14,7 +16,9 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  */
 public class Assets {
 
-    public static BitmapFont font;
+    public static SpriteBatch batch;
+    public static ModelBatch  modelBatch;
+    public static BitmapFont  font;
 
     public static Texture testTexture;
 
@@ -25,6 +29,9 @@ public class Assets {
     public static  Model        skydomeModel;
 
     public static void load() {
+        batch = new SpriteBatch();
+        modelBatch = new ModelBatch();
+
         font = new BitmapFont();
         font.getData().markupEnabled = true;
 
@@ -42,6 +49,8 @@ public class Assets {
     }
 
     public static void dispose() {
+        batch.dispose();
+        modelBatch.dispose();
         font.dispose();
         testTexture.dispose();
         defaultShader.dispose();
@@ -56,7 +65,7 @@ public class Assets {
             throw new GdxRuntimeException("Failed to compile shader program:\n" + shader.getLog());
         }
         else if (shader.getLog().length() > 0) {
-            Gdx.app.error("SHADER", "ShaderProgram compilation log:\n" + shader.getLog());
+            Gdx.app.debug("SHADER", "ShaderProgram compilation log:\n" + shader.getLog());
         }
         return shader;
     }

@@ -23,6 +23,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.lando.systems.July15GAM.July15GAM;
+import com.lando.systems.July15GAM.scene.Scene;
 import com.lando.systems.July15GAM.utils.Assets;
 
 /**
@@ -41,6 +42,7 @@ public class TestScreen extends ScreenAdapter {
     PerspectiveCamera     camera;
     CameraInputController camController;
     UserInterface         userInterface;
+    Scene                 scene;
 
     PointLight            light;
     Vector3               lightDir;
@@ -53,12 +55,10 @@ public class TestScreen extends ScreenAdapter {
     Model                 sphereModel;
     float                 cubeRotAngle;
     float                 sphereRotAngle;
-    ModelInstance         skydomeTopInstance;
-    ModelInstance         skydomeBottomInstance;
 
     public TestScreen(July15GAM game) {
-        batch = new SpriteBatch();
-        modelBatch = new ModelBatch();
+        batch = Assets.batch;
+        modelBatch = Assets.modelBatch;
         ambientColor = new Color(0.4f, 0.4f, 0.4f, 1f);
         materialColor = ColorAttribute.createDiffuse(1f, 1f, 1f, 1f);
         lightColor = new Color(1f, 0f, 0f, 1f);
@@ -105,9 +105,8 @@ public class TestScreen extends ScreenAdapter {
         instances.add(planeInstance);
         instances.add(cubeInstance);
         instances.add(sphereInstance);
-        skydomeTopInstance = new ModelInstance(Assets.skydomeModel);
-        skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
-        skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
+
+        scene = new Scene();
 
         mouseScreenPos = new Vector3();
         mouseWorldPos = new Vector3();
@@ -144,12 +143,7 @@ public class TestScreen extends ScreenAdapter {
             Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-            modelBatch.render(skydomeTopInstance);
-            modelBatch.render(skydomeBottomInstance);
-
-            modelBatch.begin(camera);
-            modelBatch.render(instances, environment);
-            modelBatch.end();
+            scene.render(camera, batch, modelBatch);
         }
         sceneFrameBuffer.end();
 
@@ -176,6 +170,8 @@ public class TestScreen extends ScreenAdapter {
         camera.update();
         updateMouseVectors(camera);
 
+        scene.update(delta, camera);
+
         final float mousePctX = mouseScreenPos.x / camera.viewportWidth;
         final float mousePctY = mouseScreenPos.y / camera.viewportHeight;
         materialColor.color.set(mousePctX, mousePctY, (mousePctX + mousePctY) / 2f, 1f);
@@ -195,9 +191,6 @@ public class TestScreen extends ScreenAdapter {
         final float dist = 5f;
         light.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 6f, dist * MathUtils.sinDeg(sphereRotAngle));
         instances.get(2).transform.setToTranslation(light.position);
-
-        skydomeTopInstance.transform.setTranslation(camera.position);
-        skydomeBottomInstance.transform.setTranslation(camera.position);
     }
 
     @Override
