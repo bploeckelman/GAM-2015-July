@@ -21,6 +21,7 @@ public class Assets {
     public static BitmapFont  font;
 
     public static Texture testTexture;
+    public static Texture grassTexture;
 
     public static ShaderProgram defaultShader;
     public static ShaderProgram atmosphereShader;
@@ -41,6 +42,7 @@ public class Assets {
                                                 Gdx.files.internal("shaders/atmosphere.frag"));
 
         testTexture = new Texture("badlogic.jpg");
+        grassTexture = new Texture("grass.png");
 
         assetManager = new AssetManager();
         assetManager.load("models/skydome.g3db", Model.class);
@@ -53,6 +55,7 @@ public class Assets {
         modelBatch.dispose();
         font.dispose();
         testTexture.dispose();
+        grassTexture.dispose();
         defaultShader.dispose();
         atmosphereShader.dispose();
         assetManager.dispose();
