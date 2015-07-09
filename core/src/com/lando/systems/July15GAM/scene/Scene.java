@@ -133,8 +133,9 @@ public class Scene implements Disposable {
 
         terrain = new Terrain();
         final Material terrainMaterial = new Material();
-        terrainMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
+        //terrainMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
+        terrainMaterial.set(ColorAttribute.createAmbient(.5f,.5f,.1f,1));
         terrain.material = terrainMaterial;
     }
 

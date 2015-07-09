@@ -22,7 +22,7 @@ public class Terrain extends Renderable {
 
     public Terrain (){
         MeshBuilder meshBuilder = new MeshBuilder();
-        meshBuilder.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal, GL20.GL_TRIANGLES);
+        meshBuilder.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates, GL20.GL_TRIANGLES);
         int width = 10;
         int tiles = 10;
         for (int i = 0; i < tiles; i++) {
@@ -34,8 +34,10 @@ public class Terrain extends Renderable {
                     for (int x = 0; x < width; x++) {
                         int xx = x + i *(width-1);
                         int yy = y + j * (width -1);
-                        double z = SimplexNoise.noise(xx, yy);
-                        vertices[x + y * width] = new VertexInfo().setPos(xx, (float) z, yy).setNor(0, 1, 0).setCol(null).setUV(xx/(float)(width*tiles), yy /(float)(width*tiles));
+                        double z = SimplexNoise.noise(xx, yy) * .1f +
+                                   SimplexNoise.noise(xx * .1, yy * .1) * .4f +
+                                   SimplexNoise.noise(xx * .01, yy * .01) * .5f;
+                        vertices[x + y * width] = new VertexInfo().setPos(xx, (float) z, yy).setNor(0, 1, 0).setUV(x/(float)(width), y /(float)(width));
                     }
                 }
 
