@@ -5,23 +5,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.*;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
-import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
-import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
-import com.badlogic.gdx.graphics.g3d.particles.influencers.ModelInfluencer;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.lando.systems.July15GAM.July15GAM;
 import com.lando.systems.July15GAM.scene.Scene;
 import com.lando.systems.July15GAM.utils.Assets;
@@ -35,7 +24,6 @@ public class TestScreen extends ScreenAdapter {
     Vector3               mouseWorldPos;
     SpriteBatch           batch;
     ModelBatch            modelBatch;
-    Environment           environment;
     FrameBuffer           sceneFrameBuffer;
     TextureRegion         sceneRegion;
     OrthographicCamera    screenCamera;
@@ -44,67 +32,9 @@ public class TestScreen extends ScreenAdapter {
     UserInterface         userInterface;
     Scene                 scene;
 
-    PointLight            light;
-    Vector3               lightDir;
-    Color                 lightColor;
-    Color                 ambientColor;
-    ColorAttribute        materialColor;
-    Array<ModelInstance>  instances;
-    Model                 cubeModel;
-    Model                 planeModel;
-    Model                 sphereModel;
-    float                 cubeRotAngle;
-    float                 sphereRotAngle;
-
     public TestScreen(July15GAM game) {
         batch = Assets.batch;
         modelBatch = Assets.modelBatch;
-        ambientColor = new Color(0.4f, 0.4f, 0.4f, 1f);
-        materialColor = ColorAttribute.createDiffuse(1f, 1f, 1f, 1f);
-        lightColor = new Color(1f, 0f, 0f, 1f);
-        lightDir = new Vector3(0f, -1f, 0f);
-        light = new PointLight().set(lightColor, 0f, 5f, 0f, 20f);
-        environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, ambientColor));
-        environment.add(light);
-
-        // TODO: very temporary... just getting something in the scene for now
-        final ModelBuilder builder = new ModelBuilder();
-        final Material cubeMaterial = new Material(materialColor);
-        cubeMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
-        cubeMaterial.set(ColorAttribute.createSpecular(Color.WHITE));
-        final long cubeAttrs = Usage.Position | Usage.Normal;
-        cubeModel = builder.createBox(5f, 5f, 5f, cubeMaterial, cubeAttrs);
-        final ModelInstance cubeInstance = new ModelInstance(cubeModel);
-
-        final Material planeMaterial = new Material();
-        planeMaterial.set(ColorAttribute.createAmbient(Color.WHITE));
-        planeMaterial.set(ColorAttribute.createSpecular(Color.WHITE));
-        planeMaterial.set(TextureAttribute.createDiffuse(Assets.testTexture));
-        final long planeAttrs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
-        planeModel = builder.createRect(
-                -20f, 0f, -20f,
-                -20f, 0f,  20f,
-                 20f, 0f,  20f,
-                 20f, 0f, -20f,
-                  0f, 1f,   0f,
-                planeMaterial,
-                planeAttrs);
-        final ModelInstance planeInstance = new ModelInstance(planeModel);
-
-        final Material sphereMaterial = new Material();
-        sphereMaterial.set(ColorAttribute.createAmbient(Color.YELLOW));
-        sphereMaterial.set(ColorAttribute.createDiffuse(Color.WHITE));
-        sphereMaterial.set(ColorAttribute.createReflection(Color.RED));
-        final long sphereAttrs = Usage.Position | Usage.Normal;
-        final float size = 0.5f;
-        sphereModel = builder.createSphere(size, size, size, 8, 8, sphereMaterial, sphereAttrs);
-        final ModelInstance sphereInstance = new ModelInstance(sphereModel);
-
-        instances = new Array<ModelInstance>();
-        instances.add(planeInstance);
-        instances.add(cubeInstance);
-        instances.add(sphereInstance);
 
         scene = new Scene();
 
@@ -171,26 +101,6 @@ public class TestScreen extends ScreenAdapter {
         updateMouseVectors(camera);
 
         scene.update(delta, camera);
-
-        final float mousePctX = mouseScreenPos.x / camera.viewportWidth;
-        final float mousePctY = mouseScreenPos.y / camera.viewportHeight;
-        materialColor.color.set(mousePctX, mousePctY, (mousePctX + mousePctY) / 2f, 1f);
-        instances.get(1).materials.get(0).set(materialColor);
-        instances.get(1).transform.setToTranslation(0f, 2.5f, 0f);
-
-        cubeRotAngle += 10f * delta;
-        if (cubeRotAngle > 1f) {
-            cubeRotAngle -= 1f;
-        }
-        instances.first().transform.rotate(0f, 1f, 0f, cubeRotAngle);
-
-        sphereRotAngle += 20f * delta;
-        if (sphereRotAngle > 360f) {
-            sphereRotAngle -= 360f;
-        }
-        final float dist = 5f;
-        light.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 6f, dist * MathUtils.sinDeg(sphereRotAngle));
-        instances.get(2).transform.setToTranslation(light.position);
     }
 
     @Override
@@ -214,10 +124,7 @@ public class TestScreen extends ScreenAdapter {
     public void dispose() {
         batch.dispose();
         modelBatch.dispose();
-        cubeModel.dispose();
-        planeModel.dispose();
-        sphereModel.dispose();
-        instances.clear();
+        scene.dispose();
         sceneFrameBuffer.dispose();
     }
 
