@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.lando.systems.July15GAM.utils.Assets;
 
@@ -66,7 +65,7 @@ public class Scene implements Disposable {
         modelBatch.begin(camera);
         modelBatch.render(planeInstance, environment);
         modelBatch.render(cubeInstance, environment);
-        modelBatch.render(sphereInstance, environment);
+        modelBatch.render(sphereInstance);
         modelBatch.render(skydomeTopInstance);
         modelBatch.render(skydomeBottomInstance);
         modelBatch.end();
@@ -88,7 +87,7 @@ public class Scene implements Disposable {
 
         pointLight = new PointLight().set(new Color(1f, 1f, 1f, 1f), 0f, 5f, 0f, 20f);
         environment = new Environment();
-        environment.set(ColorAttribute.createAmbient(0.4f, 0.4f, 0.4f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.2f, 0.2f, 0.2f, 1f));
         environment.add(pointLight);
 
         final Material cubeMaterial = new Material();
