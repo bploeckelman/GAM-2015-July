@@ -64,12 +64,10 @@ public class Scene implements Disposable {
      */
     public void render(Camera camera, SpriteBatch batch, ModelBatch modelBatch) {
         modelBatch.begin(camera);
-        //modelBatch.render(planeInstance, environment);
         modelBatch.render(cubeInstance, environment);
         modelBatch.render(sphereInstance, environment);
         modelBatch.render(skydomeTopInstance);
         modelBatch.render(skydomeBottomInstance);
-        terrain.environment = environment;
         modelBatch.render(terrain);
         modelBatch.end();
     }
@@ -131,7 +129,7 @@ public class Scene implements Disposable {
         skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
 
-        terrain = new Terrain();
+        terrain = new Terrain(environment);
         final Material terrainMaterial = new Material();
         //terrainMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));

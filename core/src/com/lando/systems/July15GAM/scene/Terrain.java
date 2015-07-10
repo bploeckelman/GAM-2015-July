@@ -3,6 +3,7 @@ package com.lando.systems.July15GAM.scene;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
@@ -20,7 +21,7 @@ public class Terrain extends Renderable {
 
 
 
-    public Terrain (){
+    public Terrain (Environment environment){
         MeshBuilder meshBuilder = new MeshBuilder();
         meshBuilder.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates, GL20.GL_TRIANGLES);
         int width = 10;
@@ -58,7 +59,7 @@ public class Terrain extends Renderable {
         shader = new DefaultShader(this);
         shader.init();
 
-
+        this.environment = environment;
     }
 
 
