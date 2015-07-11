@@ -27,8 +27,8 @@ public class July15GAM extends Game {
 		Tween.registerAccessor(Vector2.class, new Vector2Accessor());
 		Tween.registerAccessor(Vector3.class, new Vector3Accessor());
 
-//		setScreen(new AtmosphereScreen(this));
-		setScreen(new TestScreen(this));
+		setScreen(new AtmosphereScreen(this));
+//		setScreen(new TestScreen(this));
 	}
 
 	@Override

@@ -58,16 +58,13 @@ public class Scene implements Disposable {
 
     /**
      * Assumes frameBuffer begin()/end() happens outside of this call
-     * @param camera
-     * @param batch
-     * @param modelBatch
      */
     public void render(Camera camera, SpriteBatch batch, ModelBatch modelBatch) {
         modelBatch.begin(camera);
         modelBatch.render(cubeInstance, environment);
         modelBatch.render(sphereInstance, environment);
-        modelBatch.render(skydomeTopInstance);
-        modelBatch.render(skydomeBottomInstance);
+//        modelBatch.render(skydomeTopInstance);
+//        modelBatch.render(skydomeBottomInstance);
         modelBatch.render(terrain);
         modelBatch.end();
     }

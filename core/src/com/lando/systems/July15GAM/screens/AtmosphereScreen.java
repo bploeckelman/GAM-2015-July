@@ -2,12 +2,15 @@ package com.lando.systems.July15GAM.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.lando.systems.July15GAM.July15GAM;
+import com.lando.systems.July15GAM.scene.Scene;
 import com.lando.systems.July15GAM.utils.Assets;
 
 /**
@@ -19,9 +22,14 @@ public class AtmosphereScreen extends ScreenAdapter {
     public static final  float INFINITY    = 3.3e+38f;
     public static final  float RAD_PER_SEC = 0.000072921150f;
 
-    private OrthographicCamera camera;
-    private Mesh               quad;
-    private ShaderProgram      atmosphereShader;
+    private OrthographicCamera    camera;
+    private PerspectiveCamera     sceneCamera;
+    private Scene                 scene;
+    private Mesh                  quad;
+    private ShaderProgram         atmosphereShader;
+    private SpriteBatch           batch;
+    private ModelBatch            modelBatch;
+    private CameraInputController camController;
 
     /**
      * Distribution coefficients for the luminance(Y) distribution function
@@ -66,6 +74,15 @@ public class AtmosphereScreen extends ScreenAdapter {
 
         camera = new OrthographicCamera(1, h / w);
 
+        sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
+        sceneCamera.position.set(10f, 10f, 10f);
+        sceneCamera.lookAt(0f, 0f, 0f);
+        sceneCamera.near = 1f;
+        sceneCamera.far = 300f;
+        sceneCamera.update();
+        camController = new CameraInputController(sceneCamera);
+        Gdx.input.setInputProcessor(camController);
+
         // We wont need indices if we use GL_TRIANGLE_FAN to draw our quad
         // TRIANGLE_FAN will draw the verts in this order: 0, 1, 2; 0, 2, 3
         quad = new Mesh(true, 4, 0, new VertexAttribute(VertexAttributes.Usage.Position, 2, "a_position"));
@@ -79,133 +96,69 @@ public class AtmosphereScreen extends ScreenAdapter {
         quad.setAutoBind(true);
 
         atmosphereShader = Assets.atmosphereShader;
+
+        scene = new Scene();
+
+        batch = Assets.batch;
+        modelBatch = Assets.modelBatch;
+    }
+
+    @Override
+    public void render(float delta) {
+        sceneCamera.update();
+        scene.update(delta, sceneCamera);
+
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        calculateAtmosphericScattering();
+
+        atmosphereShader.begin();
+        {
+            // uniform vec3 windowDimensions;
+            atmosphereShader.setUniform3fv("windowDimensions", new float[] { Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0.f }, 0, 3);
+            // uniform vec3 sunDirection;
+            atmosphereShader.setUniform3fv("sunDirection",
+                                           new float[] { sunDirection.x, sunDirection.y, sunDirection.z },
+                                           0,
+                                           3);
+            // uniform vec3 zenithData; //zenithX, zenithY, zenithLuminance
+            atmosphereShader.setUniform3fv("zenithData", new float[] { zenithX, zenithY, zenithLuminance }, 0, 3);
+            // uniform float perezLuminance[5];
+            atmosphereShader.setUniform1fv("perezLuminance", perezLuminance, 0, perezLuminance.length);
+            // uniform float perezX[5];
+            atmosphereShader.setUniform1fv("perezX", perezX, 0, perezX.length);
+            // uniform float perezY[5];
+            atmosphereShader.setUniform1fv("perezY", perezY, 0, perezY.length);
+//            // uniform float exposure;
+//            atmosphereShader.setUniformf("exposure", exposure);
+//            //uniform float overcast;
+//            atmosphereShader.setUniformf("overcast", overcast);
+            //uniform vec3 colourCorrection; //exposure, overcast, gammaCorrection
+            atmosphereShader.setUniform3fv("colourCorrection", new float[] { exposure, overcast, gammaCorrection }, 0, 3);
+
+            quad.render(atmosphereShader, GL20.GL_TRIANGLE_FAN);
+        }
+        atmosphereShader.end();
+
+        scene.render(sceneCamera, batch, modelBatch);
     }
 
     @Override
     public void dispose() {
         quad.dispose();
+        scene.dispose();
     }
-
-    private float thetaSun = MathUtils.degreesToRadians * 10.f;
-    private float   phiSun;
-    private float   turbidity = 2.f;
-    private float   overcast;
-//    private boolean isLinearExpControl;
-    private float   exposure;
-    private float   gammaCorrection;
-    private float   zenithLuminance;
-    private float   zenithX;
-    private float   zenithY;
-    private float[] perezLuminance;
-    private float[] perezX;
-    private float[] perezY;
-    private Vector3 sunDirection = new Vector3();
 
     @Override
-    public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    public void resize(int width, int height) {}
 
-        thetaSun += (RAD_PER_SEC * 1000) / Gdx.graphics.getFramesPerSecond();
-        if (thetaSun > HALF_PI + (MathUtils.degreesToRadians * 30.f)) {
-            thetaSun = 0;
-        }
-        phiSun = MathUtils.degreesToRadians * 90.f;
+    @Override
+    public void pause() {}
 
-        turbidity = 2.f;
-        turbidity = MathUtils.clamp(turbidity, 1.0f, 512.0f);
+    @Override
+    public void resume() {}
 
-        overcast = 0.f;
-        overcast = MathUtils.clamp(overcast, 0.0f, 1.0f);
-
-        //		isLinearExpControl = true;
-
-
-        //		// Numbers to squash exp curve
-        //		// 1 3 -0.3 11
-        //		// 0.5 3.2 -0.3 14
-        //		// 0.5 3.5 -0.3 13.5
-        //		// 0.3 3.3 -0.3 17.2
-        //		// 0.1 3.3 -0.7 17.2
-        //		double a = 0.1; // Vertical Stretching or Compression
-        //		double b = 3.3; // Horizontal Stretching or Compression
-        //		double c = -0.7; // Translate Graph Horizontally
-        //		double d = 17.2; // Translate Graph Vertically, Minimum exposure of 15
-        //		exposure = (float) (a
-        //				* Math.exp(b * ((thetaSun / HALF_PI) - c)) + d);
-
-        exposure = 18.f;
-        exposure = 1.0f / MathUtils.clamp(exposure, 1.0f, INFINITY);
-
-        // Start fading out gammaCorrection after sun passes 70 degrees
-        gammaCorrection = 1.f / MathUtils.clamp(2.5f * ((MathUtils.degreesToRadians * 70.f) / thetaSun), 1.f, 2.5f);
-
-        // gammaCorrection = 1.0f / FastMath.clamp(gammaCorrection, 1.f,
-        // INFINITY);
-
-        float chi = ((4.0f / 9.0f) - (turbidity / 120.0f))
-                    * (MathUtils.PI - (2.0f * thetaSun));
-        zenithLuminance = ((4.0453f * turbidity) - 4.9710f) * tan(chi)
-                          - (0.2155f * turbidity) + 2.4192f;
-        if (zenithLuminance < 0.0f) {
-            zenithLuminance = -zenithLuminance;
-        }
-
-        sunDirection.x = MathUtils.cos(HALF_PI - thetaSun) * MathUtils.cos(phiSun);
-        sunDirection.y = MathUtils.sin(HALF_PI - thetaSun);
-        sunDirection.z = MathUtils.cos(HALF_PI - thetaSun) * MathUtils.sin(phiSun);
-        sunDirection.nor();
-
-        // get x / y zenith
-        zenithX = getZenith(zenithXmatrix, thetaSun, turbidity);
-        zenithY = getZenith(zenithYmatrix, thetaSun, turbidity);
-
-        // get perez function parameters
-        perezLuminance = getPerez(distributionLuminance, turbidity);
-        perezX = getPerez(distributionXcomp, turbidity);
-        perezY = getPerez(distributionYcomp, turbidity);
-
-        // make some precalculation
-        zenithX = perezFunctionO1(perezX, thetaSun, zenithX);
-        zenithY = perezFunctionO1(perezY, thetaSun, zenithY);
-        zenithLuminance = perezFunctionO1(perezLuminance, thetaSun, zenithLuminance);
-
-        atmosphereShader.begin();
-
-        // uniform vec3 windowDimensions;
-        atmosphereShader.setUniform3fv("windowDimensions", new float[] {
-                Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0.f }, 0, 3);
-
-        // uniform vec3 sunDirection;
-        atmosphereShader.setUniform3fv("sunDirection",
-                                       new float[] { sunDirection.x, sunDirection.y, sunDirection.z },
-                                       0,
-                                       3);
-
-        // uniform vec3 zenithData; //zenithX, zenithY, zenithLuminance
-        atmosphereShader.setUniform3fv("zenithData", new float[] { zenithX, zenithY, zenithLuminance }, 0, 3);
-
-        // uniform float perezLuminance[5];
-        atmosphereShader.setUniform1fv("perezLuminance", perezLuminance, 0, perezLuminance.length);
-
-        // uniform float perezX[5];
-        atmosphereShader.setUniform1fv("perezX", perezX, 0, perezX.length);
-
-        // uniform float perezY[5];
-        atmosphereShader.setUniform1fv("perezY", perezY, 0, perezY.length);
-
-        //		// uniform float exposure;
-        //		atmosphereShader.setUniformf("exposure", exposure);
-        //
-        //		//uniform float overcast;
-        //		atmosphereShader.setUniformf("overcast", overcast);
-
-        //uniform vec3 colourCorrection; //exposure, overcast, gammaCorrection
-        atmosphereShader.setUniform3fv("colourCorrection", new float[] { exposure, overcast, gammaCorrection }, 0, 3);
-
-        quad.render(atmosphereShader, GL20.GL_TRIANGLE_FAN);
-        atmosphereShader.end();
-    }
 
     public static float exp(float fValue) {
         return (float) Math.exp(fValue);
@@ -249,16 +202,80 @@ public class AtmosphereScreen extends ScreenAdapter {
         return zenithValue / val;
     }
 
-    @Override
-    public void resize(int width, int height) {
-    }
+    private float thetaSun = MathUtils.degreesToRadians * 10.f;
+    private float   phiSun;
+    private float   turbidity = 2.f;
+    private float   overcast;
+//    private boolean isLinearExpControl;
+    private float   exposure;
+    private float   gammaCorrection;
+    private float   zenithLuminance;
+    private float   zenithX;
+    private float   zenithY;
+    private float[] perezLuminance;
+    private float[] perezX;
+    private float[] perezY;
+    private Vector3 sunDirection = new Vector3();
+    private void calculateAtmosphericScattering() {
+        thetaSun += (RAD_PER_SEC * 1000) / Gdx.graphics.getFramesPerSecond();
+        if (thetaSun > HALF_PI + (MathUtils.degreesToRadians * 30.f)) {
+            thetaSun = 0;
+        }
+        phiSun = MathUtils.degreesToRadians * 90.f;
 
-    @Override
-    public void pause() {
-    }
+        turbidity = 2.f;
+        turbidity = MathUtils.clamp(turbidity, 1.0f, 512.0f);
 
-    @Override
-    public void resume() {
+        overcast = 0.f;
+        overcast = MathUtils.clamp(overcast, 0.0f, 1.0f);
+
+//        isLinearExpControl = true;
+
+//        // Numbers to squash exp curve
+//        // 1 3 -0.3 11
+//        // 0.5 3.2 -0.3 14
+//        // 0.5 3.5 -0.3 13.5
+//        // 0.3 3.3 -0.3 17.2
+//        // 0.1 3.3 -0.7 17.2
+//        double a = 0.1; // Vertical Stretching or Compression
+//        double b = 3.3; // Horizontal Stretching or Compression
+//        double c = -0.7; // Translate Graph Horizontally
+//        double d = 17.2; // Translate Graph Vertically, Minimum exposure of 15
+//        exposure = (float) (a * Math.exp(b * ((thetaSun / HALF_PI) - c)) + d);
+
+        exposure = 18.f;
+        exposure = 1.0f / MathUtils.clamp(exposure, 1.0f, INFINITY);
+
+        // Start fading out gammaCorrection after sun passes 70 degrees
+        gammaCorrection = 1.f / MathUtils.clamp(2.5f * ((MathUtils.degreesToRadians * 70.f) / thetaSun), 1.f, 2.5f);
+//        gammaCorrection = 1.0f / FastMath.clamp(gammaCorrection, 1.f, INFINITY);
+
+        float chi = ((4.0f / 9.0f) - (turbidity / 120.0f))
+                    * (MathUtils.PI - (2.0f * thetaSun));
+        zenithLuminance = ((4.0453f * turbidity) - 4.9710f) * tan(chi)
+                          - (0.2155f * turbidity) + 2.4192f;
+        if (zenithLuminance < 0.0f) {
+            zenithLuminance = -zenithLuminance;
+        }
+
+        sunDirection.x = MathUtils.cos(HALF_PI - thetaSun) * MathUtils.cos(phiSun);
+        sunDirection.y = MathUtils.sin(HALF_PI - thetaSun);
+        sunDirection.z = MathUtils.cos(HALF_PI - thetaSun) * MathUtils.sin(phiSun);
+        sunDirection.nor();
+
+        // get x / y zenith
+        zenithX = getZenith(zenithXmatrix, thetaSun, turbidity);
+        zenithY = getZenith(zenithYmatrix, thetaSun, turbidity);
+
+        // get perez function parameters
+        perezLuminance = getPerez(distributionLuminance, turbidity);
+        perezX = getPerez(distributionXcomp, turbidity);
+        perezY = getPerez(distributionYcomp, turbidity);
+
+        // make some precalculation
+        zenithX = perezFunctionO1(perezX, thetaSun, zenithX);
+        zenithY = perezFunctionO1(perezY, thetaSun, zenithY);
+        zenithLuminance = perezFunctionO1(perezLuminance, thetaSun, zenithLuminance);
     }
 
 }
