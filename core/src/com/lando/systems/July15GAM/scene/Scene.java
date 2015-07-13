@@ -2,6 +2,7 @@ package com.lando.systems.July15GAM.scene;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.*;
@@ -52,7 +53,7 @@ public class Scene implements Disposable {
         }
         final float dist = 5f;
 
-        pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 6f, dist * MathUtils.sinDeg(sphereRotAngle));
+        pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 9.5f, dist * MathUtils.sinDeg(sphereRotAngle));
         sphereInstance.transform.setToTranslation(pointLight.position);
     }
 
@@ -120,13 +121,13 @@ public class Scene implements Disposable {
         planeInstance = new ModelInstance(planeModel);
         sphereInstance = new ModelInstance(sphereModel);
 
-        cubeInstance.transform.setTranslation(0f, 2.5f, 0f);
+        cubeInstance.transform.setTranslation(0f, 7.5f, 0f);
 
         skydomeTopInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
 
-        terrain = new Terrain(environment);
+        terrain = new Terrain(environment, Assets.terrainHeightmap);
         final Material terrainMaterial = new Material();
         //terrainMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));

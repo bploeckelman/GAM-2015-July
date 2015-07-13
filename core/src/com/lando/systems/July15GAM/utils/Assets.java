@@ -3,6 +3,7 @@ package com.lando.systems.July15GAM.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -19,6 +20,8 @@ public class Assets {
     public static SpriteBatch batch;
     public static ModelBatch  modelBatch;
     public static BitmapFont  font;
+
+    public static Pixmap terrainHeightmap;
 
     public static Texture testTexture;
     public static Texture grassTexture;
@@ -41,6 +44,8 @@ public class Assets {
         atmosphereShader = compileShaderProgram(Gdx.files.internal("shaders/passthru.vert"),
                                                 Gdx.files.internal("shaders/atmosphere.frag"));
 
+        terrainHeightmap = new Pixmap(Gdx.files.internal("heightmap.png"));
+
         testTexture = new Texture("badlogic.jpg");
         grassTexture = new Texture("grass.png");
 
@@ -58,6 +63,7 @@ public class Assets {
         grassTexture.dispose();
         defaultShader.dispose();
         atmosphereShader.dispose();
+        terrainHeightmap.dispose();
         assetManager.dispose();
     }
 
