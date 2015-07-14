@@ -5,8 +5,11 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -29,6 +32,8 @@ public class AtmosphereScreen extends ScreenAdapter {
     private Scene                 scene;
     private Mesh                  quad;
     private ShaderProgram         atmosphereShader;
+    private FrameBuffer           atmosphereFBO;
+    private TextureRegion         atmosphereRegion;
     private SpriteBatch           batch;
     private ModelBatch            modelBatch;
     private FirstPersonCameraController camController;
@@ -104,6 +109,13 @@ public class AtmosphereScreen extends ScreenAdapter {
 
         batch = Assets.batch;
         modelBatch = Assets.modelBatch;
+
+        atmosphereFBO = new FrameBuffer(Pixmap.Format.RGB888, July15GAM.win_width, July15GAM.win_height, false);
+        atmosphereRegion = new TextureRegion(atmosphereFBO.getColorBufferTexture());
+        atmosphereRegion.flip(false, true);
+
+        scene.getSkydomeTop().getMaterial("sky").set(TextureAttribute.createDiffuse(atmosphereRegion));
+        scene.getSkydomeBottom().getMaterial("sky").set(TextureAttribute.createDiffuse(atmosphereRegion));
     }
 
     @Override
@@ -119,34 +131,7 @@ public class AtmosphereScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         calculateAtmosphericScattering();
-
-        atmosphereShader.begin();
-        {
-            // uniform vec3 windowDimensions;
-            atmosphereShader.setUniform3fv("windowDimensions", new float[] { Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0.f }, 0, 3);
-            // uniform vec3 sunDirection;
-            atmosphereShader.setUniform3fv("sunDirection",
-                                           new float[] { sunDirection.x, sunDirection.y, sunDirection.z },
-                                           0,
-                                           3);
-            // uniform vec3 zenithData; //zenithX, zenithY, zenithLuminance
-            atmosphereShader.setUniform3fv("zenithData", new float[] { zenithX, zenithY, zenithLuminance }, 0, 3);
-            // uniform float perezLuminance[5];
-            atmosphereShader.setUniform1fv("perezLuminance", perezLuminance, 0, perezLuminance.length);
-            // uniform float perezX[5];
-            atmosphereShader.setUniform1fv("perezX", perezX, 0, perezX.length);
-            // uniform float perezY[5];
-            atmosphereShader.setUniform1fv("perezY", perezY, 0, perezY.length);
-//            // uniform float exposure;
-//            atmosphereShader.setUniformf("exposure", exposure);
-//            //uniform float overcast;
-//            atmosphereShader.setUniformf("overcast", overcast);
-            //uniform vec3 colourCorrection; //exposure, overcast, gammaCorrection
-            atmosphereShader.setUniform3fv("colourCorrection", new float[] { exposure, overcast, gammaCorrection }, 0, 3);
-
-            quad.render(atmosphereShader, GL20.GL_TRIANGLE_FAN);
-        }
-        atmosphereShader.end();
+        renderAtmosphereToTexture();
 
         scene.render(sceneCamera, batch, modelBatch);
     }
@@ -283,6 +268,40 @@ public class AtmosphereScreen extends ScreenAdapter {
         zenithX = perezFunctionO1(perezX, thetaSun, zenithX);
         zenithY = perezFunctionO1(perezY, thetaSun, zenithY);
         zenithLuminance = perezFunctionO1(perezLuminance, thetaSun, zenithLuminance);
+    }
+
+    private void renderAtmosphereToTexture() {
+        atmosphereFBO.begin();
+        {
+            atmosphereShader.begin();
+
+            // uniform vec3 windowDimensions;
+            atmosphereShader.setUniform3fv("windowDimensions", new float[] { Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0.f }, 0, 3);
+            // uniform vec3 sunDirection;
+            atmosphereShader.setUniform3fv("sunDirection",
+                                           new float[] { sunDirection.x, sunDirection.y, sunDirection.z },
+                                           0,
+                                           3);
+            // uniform vec3 zenithData; //zenithX, zenithY, zenithLuminance
+            atmosphereShader.setUniform3fv("zenithData", new float[] { zenithX, zenithY, zenithLuminance }, 0, 3);
+            // uniform float perezLuminance[5];
+            atmosphereShader.setUniform1fv("perezLuminance", perezLuminance, 0, perezLuminance.length);
+            // uniform float perezX[5];
+            atmosphereShader.setUniform1fv("perezX", perezX, 0, perezX.length);
+            // uniform float perezY[5];
+            atmosphereShader.setUniform1fv("perezY", perezY, 0, perezY.length);
+            //            // uniform float exposure;
+            //            atmosphereShader.setUniformf("exposure", exposure);
+            //            //uniform float overcast;
+            //            atmosphereShader.setUniformf("overcast", overcast);
+            //uniform vec3 colourCorrection; //exposure, overcast, gammaCorrection
+            atmosphereShader.setUniform3fv("colourCorrection", new float[] { exposure, overcast, gammaCorrection }, 0, 3);
+
+            quad.render(atmosphereShader, GL20.GL_TRIANGLE_FAN);
+
+            atmosphereShader.end();
+        }
+        atmosphereFBO.end();
     }
 
 }

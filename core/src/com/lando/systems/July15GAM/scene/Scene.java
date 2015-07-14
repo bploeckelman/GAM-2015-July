@@ -2,7 +2,6 @@ package com.lando.systems.July15GAM.scene;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.*;
@@ -37,9 +36,12 @@ public class Scene implements Disposable {
         initializeModels();
     }
 
+    public ModelInstance getSkydomeTop() { return skydomeTopInstance; }
+    public ModelInstance getSkydomeBottom() { return skydomeBottomInstance; }
+
     public void update(float delta, Camera camera) {
-        skydomeTopInstance.transform.setTranslation(camera.position);
-        skydomeBottomInstance.transform.setTranslation(camera.position);
+        skydomeTopInstance.transform.setTranslation(camera.position.x, camera.position.y - 30f, camera.position.z);
+        skydomeBottomInstance.transform.setTranslation(camera.position.x, camera.position.y - 30f, camera.position.z);
 
         cubeRotAngle += 10f * delta;
         if (cubeRotAngle > 1f) {
@@ -64,7 +66,7 @@ public class Scene implements Disposable {
         modelBatch.begin(camera);
         modelBatch.render(cubeInstance, environment);
         modelBatch.render(sphereInstance, environment);
-//        modelBatch.render(skydomeTopInstance);
+        modelBatch.render(skydomeTopInstance);
 //        modelBatch.render(skydomeBottomInstance);
         modelBatch.render(terrain);
         modelBatch.end();
