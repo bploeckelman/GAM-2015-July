@@ -6,7 +6,7 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -20,6 +20,7 @@ import com.lando.systems.July15GAM.utils.Assets;
 public class AtmosphereScreen extends ScreenAdapter {
 
     private static final float HALF_PI     = MathUtils.PI / 2.f;
+    private static final float CAM_SPEED   = 25f;
     public static final  float INFINITY    = 3.3e+38f;
     public static final  float RAD_PER_SEC = 0.000072921150f;
 
@@ -30,7 +31,7 @@ public class AtmosphereScreen extends ScreenAdapter {
     private ShaderProgram         atmosphereShader;
     private SpriteBatch           batch;
     private ModelBatch            modelBatch;
-    private CameraInputController camController;
+    private FirstPersonCameraController camController;
 
     /**
      * Distribution coefficients for the luminance(Y) distribution function
@@ -77,11 +78,12 @@ public class AtmosphereScreen extends ScreenAdapter {
 
         sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
         sceneCamera.position.set(10f, 10f, 10f);
-        sceneCamera.lookAt(0f, 0f, 0f);
+        sceneCamera.lookAt(0f, 10f, 0f);
         sceneCamera.near = 1f;
         sceneCamera.far = 300f;
         sceneCamera.update();
-        camController = new CameraInputController(sceneCamera);
+        camController = new FirstPersonCameraController(sceneCamera);
+        camController.setVelocity(CAM_SPEED);
         Gdx.input.setInputProcessor(camController);
 
         // We wont need indices if we use GL_TRIANGLE_FAN to draw our quad
@@ -109,6 +111,7 @@ public class AtmosphereScreen extends ScreenAdapter {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
         }
+        camController.update(delta);
         sceneCamera.update();
         scene.update(delta, sceneCamera);
 
