@@ -10,7 +10,11 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.lando.systems.July15GAM.scene.terrain.Terrain;
+import com.lando.systems.July15GAM.scene.terrain.TerrainChunk;
 import com.lando.systems.July15GAM.utils.Assets;
 
 /**
@@ -38,6 +42,7 @@ public class Scene implements Disposable {
 
     public ModelInstance getSkydomeTop() { return skydomeTopInstance; }
     public ModelInstance getSkydomeBottom() { return skydomeBottomInstance; }
+    public Terrain getTerrain() { return terrain; }
 
     public void update(float delta, Camera camera) {
         skydomeTopInstance.transform.setTranslation(camera.position.x, camera.position.y - 30f, camera.position.z);
@@ -129,11 +134,30 @@ public class Scene implements Disposable {
         skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
         skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
 
-        terrain = new Terrain(environment, Assets.terrainHeightmap);
+        // NOTE: these transforms are applied directly to the mesh vertices during the batching process (I think)
+        final Array<Matrix4> chunkTransforms = new Array<Matrix4>();
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f,   0f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate( 10f, 5f,   0f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(-10f, 5f,   0f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f,  10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate( 10f, 5f,  10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(-10f, 5f,  10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f, -10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate( 10f, 5f, -10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(-10f, 5f, -10f).scale(10f, 1f, 10f));
+
+        final int numChunks = 9;
+        final int chunkAttribs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
+        final TerrainChunk chunk = new TerrainChunk(true, Assets.terrainHeightmap, true, chunkAttribs);
+        final Array<TerrainChunk> chunks = new Array<TerrainChunk>();
+        for (int i = 0; i < numChunks; ++i) {
+            chunks.add(chunk);
+        }
+
+        terrain = new Terrain(chunks, chunkTransforms, environment);
         final Material terrainMaterial = new Material();
-        //terrainMaterial.set(ColorAttribute.createAmbient(new Color(0.2f, 0.2f, 0.2f, 1f)));
-        terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
         terrainMaterial.set(ColorAttribute.createAmbient(.5f,.5f,.1f,1));
+        terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
         terrain.material = terrainMaterial;
     }
 

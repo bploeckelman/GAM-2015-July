@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -37,6 +38,8 @@ public class AtmosphereScreen extends ScreenAdapter {
     private SpriteBatch           batch;
     private ModelBatch            modelBatch;
     private FirstPersonCameraController camController;
+
+    private GlyphLayout glyphLayout = new GlyphLayout();
 
     /**
      * Distribution coefficients for the luminance(Y) distribution function
@@ -79,7 +82,9 @@ public class AtmosphereScreen extends ScreenAdapter {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
 
-        camera = new OrthographicCamera(1, h / w);
+        camera = new OrthographicCamera(July15GAM.win_width, July15GAM.win_height);
+        camera.translate(July15GAM.win_width / 2f, -July15GAM.win_height / 2f);
+        camera.update();
 
         sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
         sceneCamera.position.set(10f, 10f, 10f);
@@ -134,6 +139,17 @@ public class AtmosphereScreen extends ScreenAdapter {
         renderAtmosphereToTexture();
 
         scene.render(sceneCamera, batch, modelBatch);
+
+        // NOTE: just debug things
+        final float posX = sceneCamera.position.x;
+        final float posY = sceneCamera.position.z;
+        final String text = "height(" + String.format("%.2f", posX) + ", " + String.format("%.2f", posY) + ") = "
+                          + String.format("%.2f", scene.getTerrain().getHeightAt(posX, posY));
+        glyphLayout.setText(Assets.font, text);
+        batch.begin();
+        batch.setProjectionMatrix(camera.combined);
+        Assets.font.draw(batch, text, 10f, -glyphLayout.height);
+        batch.end();
     }
 
     @Override
