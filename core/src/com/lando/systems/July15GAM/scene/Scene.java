@@ -30,23 +30,20 @@ public class Scene implements Disposable {
     ModelInstance        cubeInstance;
     ModelInstance        planeInstance;
     ModelInstance        sphereInstance;
-    ModelInstance        skydomeTopInstance;
-    ModelInstance        skydomeBottomInstance;
     float                cubeRotAngle;
     float                sphereRotAngle;
     Terrain              terrain;
+    Skydome              skydome;
 
     public Scene() {
         initializeModels();
     }
 
-    public ModelInstance getSkydomeTop() { return skydomeTopInstance; }
-    public ModelInstance getSkydomeBottom() { return skydomeBottomInstance; }
     public Terrain getTerrain() { return terrain; }
+    public Skydome getSkydome() { return skydome; }
 
     public void update(float delta, Camera camera) {
-        skydomeTopInstance.transform.setTranslation(camera.position.x, camera.position.y - 30f, camera.position.z);
-        skydomeBottomInstance.transform.setTranslation(camera.position.x, camera.position.y - 30f, camera.position.z);
+        skydome.update(delta, camera);
 
         cubeRotAngle += 10f * delta;
         if (cubeRotAngle > 1f) {
@@ -69,10 +66,9 @@ public class Scene implements Disposable {
      */
     public void render(Camera camera, SpriteBatch batch, ModelBatch modelBatch) {
         modelBatch.begin(camera);
+        modelBatch.render(skydome.getModelInstance());
         modelBatch.render(cubeInstance, environment);
         modelBatch.render(sphereInstance, environment);
-        modelBatch.render(skydomeTopInstance);
-//        modelBatch.render(skydomeBottomInstance);
         modelBatch.render(terrain);
         modelBatch.end();
     }
@@ -82,6 +78,7 @@ public class Scene implements Disposable {
         sphereModel.dispose();
         planeModel.dispose();
         cubeModel.dispose();
+        skydome.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -130,10 +127,6 @@ public class Scene implements Disposable {
 
         cubeInstance.transform.setTranslation(0f, 7.5f, 0f);
 
-        skydomeTopInstance = new ModelInstance(Assets.skydomeModel);
-        skydomeBottomInstance = new ModelInstance(Assets.skydomeModel);
-        skydomeBottomInstance.transform.rotate(1f, 0f, 1f, 180f);
-
         // NOTE: these transforms are applied directly to the mesh vertices during the batching process (I think)
         final Array<Matrix4> chunkTransforms = new Array<Matrix4>();
         chunkTransforms.add(new Matrix4().translate(  0f, 5f,   0f).scale(10f, 1f, 10f));
@@ -159,6 +152,8 @@ public class Scene implements Disposable {
         terrainMaterial.set(ColorAttribute.createAmbient(.5f,.5f,.1f,1));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
         terrain.material = terrainMaterial;
+
+        skydome = new Skydome();
     }
 
 }
