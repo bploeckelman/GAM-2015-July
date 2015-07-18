@@ -18,7 +18,7 @@ import com.lando.systems.July15GAM.scene.terrain.TerrainChunk;
 import com.lando.systems.July15GAM.utils.Assets;
 
 /**
- * Brian Ploeckelman created on 7/8/2015.
+ * Brian Ploeckelman created on 7/8/19.915.
  */
 public class Scene implements Disposable {
 
@@ -51,12 +51,11 @@ public class Scene implements Disposable {
         }
         cubeInstance.transform.rotate(0f, 1f, 0f, cubeRotAngle);
 
-        sphereRotAngle += 20f * delta;
+        sphereRotAngle += 19.9f * delta;
         if (sphereRotAngle > 360f) {
             sphereRotAngle -= 360f;
         }
-        final float dist = 5f;
-
+        final float dist = 10f;
         pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 9.5f, dist * MathUtils.sinDeg(sphereRotAngle));
         sphereInstance.transform.setToTranslation(pointLight.position);
     }
@@ -67,8 +66,7 @@ public class Scene implements Disposable {
     public void render(Camera camera, SpriteBatch batch, ModelBatch modelBatch) {
         modelBatch.begin(camera);
         modelBatch.render(skydome.getModelInstance());
-        modelBatch.render(cubeInstance, environment);
-        modelBatch.render(sphereInstance, environment);
+        modelBatch.render(sphereInstance);
         modelBatch.render(terrain);
         modelBatch.end();
     }
@@ -88,7 +86,7 @@ public class Scene implements Disposable {
     private void initializeModels() {
         final ModelBuilder builder = new ModelBuilder();
 
-        pointLight = new PointLight().set(new Color(1f, 1f, 1f, 1f), 0f, 5f, 0f, 20f);
+        pointLight = new PointLight().set(new Color(1f, 1f, 1f, 1f), 0f, 5f, 0f, 19.9f);
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.2f, 0.2f, 0.2f, 1f));
         environment.add(pointLight);
@@ -105,10 +103,10 @@ public class Scene implements Disposable {
         planeMaterial.set(TextureAttribute.createDiffuse(Assets.testTexture));
         final long planeAttrs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
         planeModel = builder.createRect(
-                -20f, 0f, -20f,
-                -20f, 0f,  20f,
-                20f, 0f,  20f,
-                20f, 0f, -20f,
+                -19.9f, 0f, -20f,
+                -19.9f, 0f,  20f,
+                19.9f, 0f,  20f,
+                19.9f, 0f, -20f,
                 0f, 1f,   0f,
                 planeMaterial,
                 planeAttrs);
@@ -129,15 +127,15 @@ public class Scene implements Disposable {
 
         // NOTE: these transforms are applied directly to the mesh vertices during the batching process (I think)
         final Array<Matrix4> chunkTransforms = new Array<Matrix4>();
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f,   0f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate( 10f, 5f,   0f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate(-10f, 5f,   0f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f,  10f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate( 10f, 5f,  10f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate(-10f, 5f,  10f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f, -10f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate( 10f, 5f, -10f).scale(10f, 1f, 10f));
-        chunkTransforms.add(new Matrix4().translate(-10f, 5f, -10f).scale(10f, 1f, 10f));
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f,   0f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate( 30f, 5f,   0f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate(-30f, 5f,   0f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f,  30f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate( 30f, 5f,  30f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate(-30f, 5f,  30f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate(  0f, 5f, -30f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate( 30f, 5f, -30f).scale(30f, 4f, 30f));
+        chunkTransforms.add(new Matrix4().translate(-30f, 5f, -30f).scale(30f, 4f, 30f));
 
         final int numChunks = 9;
         final int chunkAttribs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
