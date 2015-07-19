@@ -19,7 +19,7 @@ import com.lando.systems.July15GAM.utils.Assets;
  */
 public class AtmosphereScreen extends ScreenAdapter {
 
-    private static final float CAM_SPEED   = 25f;
+    private static final float CAM_SPEED   = 5f;
 
     private OrthographicCamera    camera;
     private PerspectiveCamera     sceneCamera;
@@ -37,8 +37,8 @@ public class AtmosphereScreen extends ScreenAdapter {
         camera.update();
 
         sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
-        sceneCamera.position.set(10f, 10f, 10f);
-        sceneCamera.lookAt(0f, 10f, 0f);
+        sceneCamera.position.set(0f, 1f, 0f);
+        sceneCamera.lookAt(10f, 0f, 10f);
         sceneCamera.near = 1f;
         sceneCamera.far = 300f;
         sceneCamera.update();

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -17,8 +18,10 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 public class Terrain extends Renderable {
 
     private Array<TerrainChunk> terrainChunks;
+    private BoundingBox boundingBox;
+    private float chunkSize;
 
-    public Terrain(Array<TerrainChunk> chunks, Array<Matrix4> transformations, Environment environment) {
+    public Terrain(Array<TerrainChunk> chunks, Array<Matrix4> transformations, float chunkSize, Environment environment) {
         final Array<Mesh> meshes = new Array<Mesh>(chunks.size);
         for (TerrainChunk chunk : chunks) {
             chunk.update();
@@ -26,7 +29,9 @@ public class Terrain extends Renderable {
         }
 
         this.terrainChunks = chunks;
+        this.chunkSize = chunkSize;
         this.mesh = mergeMeshes(meshes, transformations);
+        this.boundingBox = mesh.calculateBoundingBox();
         this.meshPartOffset = 0;
         this.meshPartSize = mesh.getNumIndices();
         this.material = new Material(); // TODO: materials on a per chunk basis?

@@ -123,29 +123,29 @@ public class Scene implements Disposable {
         planeInstance = new ModelInstance(planeModel);
         sphereInstance = new ModelInstance(sphereModel);
 
-        cubeInstance.transform.setTranslation(0f, 7.5f, 0f);
+        final int numChunksWide = 1;
+        final int numChunksLong = 2;
+        final float chunkSize = 5f;
+        final int chunkAttribs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
 
+        final Array<TerrainChunk> chunks = new Array<TerrainChunk>();
         // NOTE: these transforms are applied directly to the mesh vertices during the batching process (I think)
         final Array<Matrix4> chunkTransforms = new Array<Matrix4>();
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f,   0f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate( 30f, 5f,   0f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate(-30f, 5f,   0f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f,  30f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate( 30f, 5f,  30f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate(-30f, 5f,  30f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate(  0f, 5f, -30f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate( 30f, 5f, -30f).scale(30f, 4f, 30f));
-        chunkTransforms.add(new Matrix4().translate(-30f, 5f, -30f).scale(30f, 4f, 30f));
+        for (int y = 0; y <= numChunksLong; ++y) {
+            for (int x = 0; x <= numChunksWide; ++x) {
+                final TerrainChunk chunk = new TerrainChunk(true, Assets.terrainHeightmap, true, chunkAttribs);
+                chunk.corner00.set((x + 0) * chunkSize, 0f, (y + 0) * chunkSize);
+                chunk.corner10.set((x + 1) * chunkSize, 0f, (y + 0) * chunkSize);
+                chunk.corner01.set((x + 0) * chunkSize, 0f, (y + 1) * chunkSize);
+                chunk.corner11.set((x + 1) * chunkSize, 0f, (y + 1) * chunkSize);
+                chunk.update();
 
-        final int numChunks = 9;
-        final int chunkAttribs = Usage.Position | Usage.Normal | Usage.TextureCoordinates;
-        final TerrainChunk chunk = new TerrainChunk(true, Assets.terrainHeightmap, true, chunkAttribs);
-        final Array<TerrainChunk> chunks = new Array<TerrainChunk>();
-        for (int i = 0; i < numChunks; ++i) {
-            chunks.add(chunk);
+                chunks.add(chunk);
+                chunkTransforms.add(new Matrix4());
+            }
         }
 
-        terrain = new Terrain(chunks, chunkTransforms, environment);
+        terrain = new Terrain(chunks, chunkTransforms, chunkSize, environment);
         final Material terrainMaterial = new Material();
         terrainMaterial.set(ColorAttribute.createAmbient(.5f,.5f,.1f,1));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
