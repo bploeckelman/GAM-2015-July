@@ -57,6 +57,11 @@ public class AtmosphereScreen extends ScreenAdapter {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            scene.getTerrain().toggleWireframe();
+        }
+
         camController.update(delta);
         sceneCamera.update();
         scene.update(delta, sceneCamera);

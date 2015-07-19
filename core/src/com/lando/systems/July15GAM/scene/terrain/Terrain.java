@@ -36,6 +36,11 @@ public class Terrain extends Renderable {
         this.shader.init();
     }
 
+    public void toggleWireframe() {
+        if      (primitiveType == GL20.GL_TRIANGLES) primitiveType = GL20.GL_LINE_LOOP;
+        else if (primitiveType == GL20.GL_LINE_LOOP)     primitiveType = GL20.GL_TRIANGLES;
+    }
+
     // TODO: work in progress
     private final Vector3 vertexPos = new Vector3();
     public float getHeightAt(float worldX, float worldY) {
