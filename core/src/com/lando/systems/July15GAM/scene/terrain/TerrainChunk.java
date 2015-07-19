@@ -346,7 +346,7 @@ public class TerrainChunk implements Disposable {
         mesh.dispose();
     }
 
-    /** Simply creates an array containing only all the red components of the data. */
+    /** Simply creates an array containing luminance values for the data. */
     public static float[] heightColorsToMap (final ByteBuffer data, final Pixmap.Format format, int width, int height) {
         final int bytesPerColor = (format == Format.RGB888 ? 3 : (format == Format.RGBA8888 ? 4 : 0));
         if (bytesPerColor == 0) throw new GdxRuntimeException("Unsupported format, should be either RGB8 or RGBA8");
@@ -366,9 +366,16 @@ public class TerrainChunk implements Disposable {
 
         float[] dest = new float[width * height];
         for (int i = 0; i < dest.length; ++i) {
-            int v = source[sourceOffset + i * 3];
-            v = v < 0 ? 256 + v : v;
-            dest[i] = (float)v / 255f;
+            int r = source[sourceOffset + i * 3 + 0];
+            int g = source[sourceOffset + i * 3 + 1];
+            int b = source[sourceOffset + i * 3 + 2];
+
+            float R = (float) (r < 0 ? 256 + r : r) / 255f;
+            float G = (float) (g < 0 ? 256 + g : g) / 255f;
+            float B = (float) (b < 0 ? 256 + b : b) / 255f;
+
+            float value = 0.2126f * R + 0.7152f * G + 0.0722f * B;
+            dest[i] = value;
         }
 
         return dest;
