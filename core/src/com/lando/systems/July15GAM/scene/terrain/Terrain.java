@@ -42,8 +42,8 @@ public class Terrain extends Renderable {
     }
 
     public void toggleWireframe() {
-        if      (primitiveType == GL20.GL_TRIANGLES) primitiveType = GL20.GL_LINE_LOOP;
-        else if (primitiveType == GL20.GL_LINE_LOOP)     primitiveType = GL20.GL_TRIANGLES;
+        if      (primitiveType == GL20.GL_TRIANGLES) primitiveType = GL20.GL_LINES;
+        else if (primitiveType == GL20.GL_LINES)     primitiveType = GL20.GL_TRIANGLES;
     }
 
     // TODO: work in progress
