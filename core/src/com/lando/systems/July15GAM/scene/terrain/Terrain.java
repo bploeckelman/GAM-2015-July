@@ -1,5 +1,6 @@
 package com.lando.systems.July15GAM.scene.terrain;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -47,24 +48,36 @@ public class Terrain extends Renderable {
     }
 
     // TODO: work in progress
+    private final Vector3 bboxMin   = new Vector3();
+    private final Vector3 bboxMax   = new Vector3();
     private final Vector3 vertexPos = new Vector3();
+
+    // TODO: this can be optimized significantly
     public float getHeightAt(float worldX, float worldY) {
-        final float chunkScale = 10f;
-        final int chunkX = (int) (worldX / chunkScale);
-        final int chunkY = (int) (worldY / chunkScale);
-        final int numChunksWide = 3;
-        final int chunkIndex = chunkY * numChunksWide + chunkX;
-        if (chunkIndex < 0 || chunkIndex >= terrainChunks.size) {
+        // NOTE: could precalculate, assuming mesh/bbox will never move
+        boundingBox.getMin(bboxMin);
+        boundingBox.getMax(bboxMax);
+
+        // Is the point outside the terrain bounds?
+        if (worldX < bboxMin.x || worldX > bboxMax.x
+         || worldY < bboxMin.z || worldY > bboxMax.z) {
             return 0f;
         }
 
-        final TerrainChunk chunk = terrainChunks.get(chunkIndex);
-        final int vertIndex = (int) (worldX + worldY * chunk.width);
-        if (vertIndex < 0 || vertIndex >= chunk.width * chunk.height) {
-            return 0f;
+        // Is the point inside one of the chunks?
+        for (TerrainChunk chunk : terrainChunks) {
+            if (worldX >= chunk.corner00.x && worldX <= chunk.corner11.x
+             && worldY >= chunk.corner00.z && worldY <= chunk.corner11.z) {
+                // Point is inside this chunk
+                final int x = (int) (worldX - chunk.corner00.x);
+                final int y = (int) (worldY - chunk.corner00.z);
+                Gdx.app.log("POS@", "(" + x + ", " + y + ")");
+                chunk.getPositionAt(vertexPos, x, y);
+                return vertexPos.y;
+            }
         }
-        final float vertexHeight = chunk.getPositionAt(vertexPos, (int) worldX, (int) worldY).y;
-        return vertexHeight;
+
+        return 0f;
     }
 
     // ------------------------------------------------------------------------

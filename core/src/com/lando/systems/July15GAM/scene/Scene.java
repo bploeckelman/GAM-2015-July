@@ -58,6 +58,13 @@ public class Scene implements Disposable {
         final float dist = 10f;
         pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 9.5f, dist * MathUtils.sinDeg(sphereRotAngle));
         sphereInstance.transform.setToTranslation(pointLight.position);
+
+        final float offset = 1.0f;
+        final float terrainHeight = terrain.getHeightAt(camera.position.x, camera.position.z);
+        if (camera.position.y < terrainHeight + offset) {
+            camera.position.y = terrainHeight + offset;
+            camera.update();
+        }
     }
 
     /**
