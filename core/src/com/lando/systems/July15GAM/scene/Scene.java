@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.lando.systems.July15GAM.scene.terrain.CLODTerrain;
 import com.lando.systems.July15GAM.scene.terrain.Terrain;
 import com.lando.systems.July15GAM.scene.terrain.TerrainChunk;
 import com.lando.systems.July15GAM.utils.Assets;
@@ -34,6 +35,7 @@ public class Scene implements Disposable {
     float                sphereRotAngle;
     Terrain              terrain;
     Skydome              skydome;
+    CLODTerrain          clodTerrain;
 
     public Scene() {
         initializeModels();
@@ -59,12 +61,12 @@ public class Scene implements Disposable {
         pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 9.5f, dist * MathUtils.sinDeg(sphereRotAngle));
         sphereInstance.transform.setToTranslation(pointLight.position);
 
-        final float offset = 1.0f;
-        final float terrainHeight = terrain.getHeightAt(camera.position.x, camera.position.z);
-        if (camera.position.y < terrainHeight + offset) {
-            camera.position.y = terrainHeight + offset;
-            camera.update();
-        }
+//        final float offset = 1.0f;
+//        final float terrainHeight = terrain.getHeightAt(camera.position.x, camera.position.z);
+//        if (camera.position.y < terrainHeight + offset) {
+//            camera.position.y = terrainHeight + offset;
+//            camera.update();
+//        }
     }
 
     /**
@@ -74,7 +76,8 @@ public class Scene implements Disposable {
         modelBatch.begin(camera);
         modelBatch.render(skydome.getModelInstance());
         modelBatch.render(sphereInstance);
-        modelBatch.render(terrain);
+//        modelBatch.render(terrain);
+        modelBatch.render(clodTerrain);
         modelBatch.end();
     }
 
@@ -84,6 +87,7 @@ public class Scene implements Disposable {
         planeModel.dispose();
         cubeModel.dispose();
         skydome.dispose();
+        clodTerrain.dispose();
     }
 
     // ------------------------------------------------------------------------
@@ -159,6 +163,8 @@ public class Scene implements Disposable {
         terrain.material = terrainMaterial;
 
         skydome = new Skydome();
+
+        clodTerrain = new CLODTerrain(Assets.terrainHeightmap, environment);
     }
 
 }

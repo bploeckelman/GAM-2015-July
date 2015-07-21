@@ -72,15 +72,15 @@ public class AtmosphereScreen extends ScreenAdapter {
         scene.render(sceneCamera, batch, modelBatch);
 
         // NOTE: just debug things
-        final float posX = sceneCamera.position.x;
-        final float posY = sceneCamera.position.z;
-        final String text = "height(" + String.format("%.2f", posX) + ", " + String.format("%.2f", posY) + ") = "
-                          + String.format("%.2f", scene.getTerrain().getHeightAt(posX, posY));
-        glyphLayout.setText(Assets.font, text);
-        batch.begin();
-        batch.setProjectionMatrix(camera.combined);
-        Assets.font.draw(batch, text, 10f, -glyphLayout.height);
-        batch.end();
+//        final float posX = sceneCamera.position.x;
+//        final float posY = sceneCamera.position.z;
+//        final String text = "height(" + String.format("%.2f", posX) + ", " + String.format("%.2f", posY) + ") = "
+//                          + String.format("%.2f", scene.getTerrain().getHeightAt(posX, posY));
+//        glyphLayout.setText(Assets.font, text);
+//        batch.begin();
+//        batch.setProjectionMatrix(camera.combined);
+//        Assets.font.draw(batch, text, 10f, -glyphLayout.height);
+//        batch.end();
     }
 
     @Override
