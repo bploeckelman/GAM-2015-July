@@ -37,7 +37,7 @@ public class AtmosphereScreen extends ScreenAdapter {
         camera.update();
 
         sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
-        sceneCamera.position.set(0f, 1f, 0f);
+        sceneCamera.position.set(0f, 5f, 0f);
         sceneCamera.lookAt(10f, 0f, 10f);
         sceneCamera.near = 1f;
         sceneCamera.far = 300f;
@@ -46,7 +46,7 @@ public class AtmosphereScreen extends ScreenAdapter {
         camController.setVelocity(CAM_SPEED);
         Gdx.input.setInputProcessor(camController);
 
-        scene = new Scene();
+        scene = new Scene(game);
 
         batch = Assets.batch;
         modelBatch = Assets.modelBatch;

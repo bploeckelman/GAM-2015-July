@@ -36,7 +36,7 @@ public class TestScreen extends ScreenAdapter {
         batch = Assets.batch;
         modelBatch = Assets.modelBatch;
 
-        scene = new Scene();
+        scene = new Scene(game);
 
         mouseScreenPos = new Vector3();
         mouseWorldPos = new Vector3();

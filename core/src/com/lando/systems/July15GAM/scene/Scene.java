@@ -1,5 +1,8 @@
 package com.lando.systems.July15GAM.scene;
 
+import aurelienribon.tweenengine.Timeline;
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.equations.Sine;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
@@ -9,10 +12,12 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.lando.systems.July15GAM.July15GAM;
+import com.lando.systems.July15GAM.accessors.ColorAccessor;
+import com.lando.systems.July15GAM.accessors.Vector3Accessor;
 import com.lando.systems.July15GAM.scene.terrain.CLODTerrain;
 import com.lando.systems.July15GAM.scene.terrain.Terrain;
 import com.lando.systems.July15GAM.scene.terrain.TerrainChunk;
@@ -37,8 +42,20 @@ public class Scene implements Disposable {
     Skydome              skydome;
     CLODTerrain          clodTerrain;
 
-    public Scene() {
+    public Scene(July15GAM game) {
         initializeModels();
+
+        Tween.to(pointLight.position, Vector3Accessor.XYZ, 4f)
+             .target(clodTerrain.getWidth() - 5f, 5f, clodTerrain.getLength() - 5f)
+             .ease(Sine.INOUT)
+             .repeatYoyo(-1, 0f)
+             .start(game.tween);
+        Timeline.createParallel()
+             .push(Tween.to(pointLight.color, ColorAccessor.R, 2f).target(0f).ease(Sine.INOUT))
+             .push(Tween.to(pointLight.color, ColorAccessor.G, 3f).target(0f).ease(Sine.INOUT))
+             .push(Tween.to(pointLight.color, ColorAccessor.B, 4f).target(0f).ease(Sine.INOUT))
+             .repeatYoyo(-1, 0f)
+             .start(game.tween);
     }
 
     public Terrain getTerrain() { return terrain; }
@@ -57,9 +74,8 @@ public class Scene implements Disposable {
         if (sphereRotAngle > 360f) {
             sphereRotAngle -= 360f;
         }
-        final float dist = 10f;
-        pointLight.position.set(dist * MathUtils.cosDeg(sphereRotAngle), 9.5f, dist * MathUtils.sinDeg(sphereRotAngle));
         sphereInstance.transform.setToTranslation(pointLight.position);
+        sphereInstance.getMaterial("mtl4").set(ColorAttribute.createDiffuse(pointLight.color));
 
 //        final float offset = 1.0f;
 //        final float terrainHeight = terrain.getHeightAt(camera.position.x, camera.position.z);
@@ -97,7 +113,7 @@ public class Scene implements Disposable {
     private void initializeModels() {
         final ModelBuilder builder = new ModelBuilder();
 
-        pointLight = new PointLight().set(new Color(1f, 1f, 1f, 1f), 0f, 5f, 0f, 19.9f);
+        pointLight = new PointLight().set(new Color(1f, 1f, 1f, 1f), 2f, 5f, 2f, 20f);
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.2f, 0.2f, 0.2f, 1f));
         environment.add(pointLight);
@@ -126,7 +142,7 @@ public class Scene implements Disposable {
         sphereMaterial.set(ColorAttribute.createAmbient(Color.YELLOW));
         sphereMaterial.set(ColorAttribute.createDiffuse(Color.WHITE));
         sphereMaterial.set(ColorAttribute.createReflection(Color.RED));
-        final long sphereAttrs = Usage.Position | Usage.Normal;
+        final long sphereAttrs = Usage.Position | Usage.ColorUnpacked | Usage.Normal;
         final float size = 0.5f;
         sphereModel = builder.createSphere(size, size, size, 8, 8, sphereMaterial, sphereAttrs);
 
@@ -158,7 +174,7 @@ public class Scene implements Disposable {
 
         terrain = new Terrain(chunks, chunkTransforms, chunkSize, environment);
         final Material terrainMaterial = new Material();
-        terrainMaterial.set(ColorAttribute.createAmbient(.5f,.5f,.1f,1));
+        terrainMaterial.set(ColorAttribute.createAmbient(.5f, .5f, .1f, 1));
         terrainMaterial.set(TextureAttribute.createDiffuse(Assets.grassTexture));
         terrain.material = terrainMaterial;
 

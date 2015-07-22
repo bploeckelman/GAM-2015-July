@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
@@ -167,8 +168,7 @@ public class CLODTerrain extends Renderable implements Disposable {
         final float dy = (float)y / (float)(numVerticesLong - 1);
         final float height = getHeightValue(x, y);
         out.position.set(x, height, y);
-        // TODO: calculate normals based on neighboring topography
-        out.normal.set(0f, 1f, 0f);
+        out.normal.set(getWeightedNormalAt(out.normal, x, y));
         out.color.set(Color.WHITE);
         out.uv.set(dx, dy); // .scl(uvScale).add(uvOffset)
         return out;
@@ -214,6 +214,75 @@ public class CLODTerrain extends Renderable implements Disposable {
     private float getHeightValue(int x, int y) {
         final int index = y * numVerticesWide + x;
         return ((index < 0 || index >= heights.length) ? 0f : heights[index]);
+    }
+
+    private Vector3 getPositionAt (Vector3 out, int x, int y) {
+        out.set(x, getHeightValue(x, y), y);
+        return out;
+    }
+
+    private Vector3 tmpV1 = new Vector3();
+    private Vector3 tmpV2 = new Vector3();
+    private Vector3 tmpV3 = new Vector3();
+    private Vector3 tmpV4 = new Vector3();
+    private Vector3 tmpV5 = new Vector3();
+    private Vector3 tmpV6 = new Vector3();
+    private Vector3 tmpV7 = new Vector3();
+
+    private Vector3 getWeightedNormalAt(Vector3 out, int x, int y) {
+        // This commented code is based on http://www.flipcode.com/archives/Calculating_Vertex_Normals_for_Height_Maps.shtml
+        // Note that this approach only works for a heightfield on the XZ plane with a magnitude on the y axis
+        // float sx = data[(x < numVerticesWide - 1 ? x + 1 : x) + y * numVerticesWide] + data[(x > 0 ? x-1 : x) + y * numVerticesWide];
+        // if (x == 0 || x == (numVerticesWide - 1))
+        // sx *= 2f;
+        // float sy = data[(y < height - 1 ? y + 1 : y) * numVerticesWide + x] + data[(y > 0 ? y-1 : y) * numVerticesWide + x];
+        // if (y == 0 || y == (height - 1))
+        // sy *= 2f;
+        // float xScale = (corner11.x - corner00.x) / (numVerticesWide - 1f);
+        // float zScale = (corner11.z - corner00.z) / (height - 1f);
+        // float yScale = magnitude.len();
+        // out.set(-sx * yScale, 2f * xScale, sy*yScale*xScale / zScale).nor();
+        // return out;
+
+        // The following approach weights the normal of the four triangles (half quad) surrounding the position.
+        // A more accurate approach would be to weight the normal of the actual triangles.
+        int faces = 0;
+        out.set(0, 0, 0);
+
+        Vector3 center = getPositionAt(tmpV1, x, y);
+        Vector3 left = x > 0 ? getPositionAt(tmpV2, x - 1, y) : null;
+        Vector3 right = x < (numVerticesWide - 1) ? getPositionAt(tmpV3, x + 1, y) : null;
+        Vector3 bottom = y > 0 ? getPositionAt(tmpV4, x, y - 1) : null;
+        Vector3 top = y < (numVerticesLong - 1) ? getPositionAt(tmpV5, x, y + 1) : null;
+        if (top != null && left != null) {
+            out.add(tmpV6.set(top).sub(center).nor().crs(tmpV7.set(center).sub(left).nor()).nor());
+            faces++;
+        }
+        if (left != null && bottom != null) {
+            out.add(tmpV6.set(left).sub(center).nor().crs(tmpV7.set(center).sub(bottom).nor()).nor());
+            faces++;
+        }
+        if (bottom != null && right != null) {
+            out.add(tmpV6.set(bottom).sub(center).nor().crs(tmpV7.set(center).sub(right).nor()).nor());
+            faces++;
+        }
+        if (right != null && top != null) {
+            out.add(tmpV6.set(right).sub(center).nor().crs(tmpV7.set(center).sub(top).nor()).nor());
+            faces++;
+        }
+        if (faces != 0)
+            out.scl(1f / (float) faces);
+        else
+            out.set(0, 1, 0);
+        return out;
+    }
+
+    public float getWidth() {
+        return numVerticesWide;
+    }
+
+    public float getLength() {
+        return numVerticesLong;
     }
 
 }
