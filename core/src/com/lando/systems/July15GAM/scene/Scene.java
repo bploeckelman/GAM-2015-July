@@ -61,6 +61,7 @@ public class Scene implements Disposable {
     }
 
     public Terrain getTerrain() { return terrain; }
+    public CLODTerrain getCLODTerrain() { return clodTerrain; }
     public Skydome getSkydome() { return skydome; }
 
     public void update(float delta, Camera camera) {
@@ -79,12 +80,12 @@ public class Scene implements Disposable {
         sphereInstance.transform.setToTranslation(pointLight.position);
         sphereInstance.getMaterial("mtl4").set(ColorAttribute.createDiffuse(pointLight.color));
 
-//        final float offset = 1.0f;
-//        final float terrainHeight = terrain.getHeightAt(camera.position.x, camera.position.z);
-//        if (camera.position.y < terrainHeight + offset) {
-//            camera.position.y = terrainHeight + offset;
-//            camera.update();
-//        }
+        final float offset = 2.0f;
+        final float terrainHeight = clodTerrain.getHeightValue((int) camera.position.x, (int) camera.position.z);
+        if (camera.position.y < terrainHeight + offset) {
+            camera.position.y = terrainHeight + offset;
+            camera.update();
+        }
     }
 
     /**

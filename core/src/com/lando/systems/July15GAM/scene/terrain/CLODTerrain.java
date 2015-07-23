@@ -212,7 +212,7 @@ public class CLODTerrain extends Renderable implements Disposable {
      * @param y the y coordinate of the regular grid for desired height value
      * @return the specified height value if it exists, zero otherwise
      */
-    private float getHeightValue(int x, int y) {
+    public float getHeightValue(int x, int y) {
         final int index = y * numVerticesWide + x;
         return ((index < 0 || index >= heights.length) ? 0f : heights[index]);
     }
