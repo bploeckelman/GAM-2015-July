@@ -7,12 +7,12 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.lando.systems.July15GAM.shaders.CLODTerrainShader;
 
 /**
  * Brian Ploeckelman created on 7/20/2015.
@@ -44,7 +44,7 @@ public class CLODTerrain extends Renderable implements Disposable {
     public CLODTerrain(Pixmap heightmapPixmap, Environment environment) {
         final boolean isStatic = true;
         final VertexAttributes attributes = MeshBuilder.createAttributes(
-                Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+                Usage.Position | Usage.Normal | Usage.TextureCoordinates | Usage.ColorUnpacked);
 
         this.heightmap       = new Texture(heightmapPixmap);
         this.numVerticesWide = heightmap.getWidth();
@@ -73,13 +73,14 @@ public class CLODTerrain extends Renderable implements Disposable {
         );
         this.primitiveType = GL20.GL_TRIANGLES;
         this.environment = environment;
-        this.shader = new DefaultShader(this);
+        this.shader = new CLODTerrainShader(this);
         this.shader.init();
     }
 
     @Override
     public void dispose() {
         mesh.dispose();
+        shader.dispose();
         heightmap.dispose();
     }
 

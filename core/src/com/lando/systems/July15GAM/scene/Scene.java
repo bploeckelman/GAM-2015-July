@@ -11,7 +11,9 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -88,13 +90,22 @@ public class Scene implements Disposable {
     /**
      * Assumes frameBuffer begin()/end() happens outside of this call
      */
+    RenderContext rc = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
+
     public void render(Camera camera, SpriteBatch batch, ModelBatch modelBatch) {
         modelBatch.begin(camera);
         modelBatch.render(skydome.getModelInstance());
         modelBatch.render(sphereInstance);
 //        modelBatch.render(terrain);
-        modelBatch.render(clodTerrain);
+//        modelBatch.render(clodTerrain);
         modelBatch.end();
+
+        rc.begin();
+        Assets.grassTexture.bind();
+        clodTerrain.shader.begin(camera, rc);
+        clodTerrain.shader.render(clodTerrain);
+        clodTerrain.shader.end();
+        rc.end();
     }
 
     @Override
