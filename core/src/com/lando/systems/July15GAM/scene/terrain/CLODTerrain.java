@@ -137,10 +137,10 @@ public class CLODTerrain extends Renderable implements Disposable {
         int h = numVerticesLong - 1;
         for (int y = 0; y < h; ++y) {
             for (int x = 0; x < w; ++x) {
-                final int c00 = y * w + x;
+                final int c00 = y * numVerticesWide + x;
                 final int c10 = c00 + 1;
-                final int c01 = c00 + w;
-                final int c11 = c10 + w;
+                final int c01 = c00 + numVerticesWide;
+                final int c11 = c10 + numVerticesWide;
                 indices[++i] = (short) c11;
                 indices[++i] = (short) c10;
                 indices[++i] = (short) c00;
