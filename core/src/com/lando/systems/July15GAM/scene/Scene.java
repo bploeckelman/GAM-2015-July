@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.lando.systems.July15GAM.July15GAM;
+import com.lando.systems.July15GAM.Player;
 import com.lando.systems.July15GAM.accessors.ColorAccessor;
 import com.lando.systems.July15GAM.accessors.Vector3Accessor;
 import com.lando.systems.July15GAM.scene.terrain.CLODTerrain;
@@ -30,6 +31,7 @@ import com.lando.systems.July15GAM.utils.Assets;
  */
 public class Scene implements Disposable {
 
+    Player               player;
     PointLight           pointLight;
     Environment          environment;
     Model                cubeModel;
@@ -48,6 +50,8 @@ public class Scene implements Disposable {
     public Scene(July15GAM game) {
         initializeModels();
 
+        player = new Player();
+
         Tween.to(pointLight.position, Vector3Accessor.XYZ, 4f)
              .target(clodTerrain.getWidth() - 5f, 5f, clodTerrain.getLength() - 5f)
              .ease(Sine.INOUT)
@@ -61,11 +65,14 @@ public class Scene implements Disposable {
              .start(game.tween);
     }
 
+    public Player getPlayer() { return player; }
     public Terrain getTerrain() { return terrain; }
     public CLODTerrain getCLODTerrain() { return clodTerrain; }
     public Skydome getSkydome() { return skydome; }
 
     public void update(float delta, Camera camera) {
+        player.update(delta);
+
         skydome.update(delta, camera);
 
         cubeRotAngle += 10f * delta;
@@ -80,6 +87,11 @@ public class Scene implements Disposable {
         }
         sphereInstance.transform.setToTranslation(pointLight.position);
 //        sphereInstance.getMaterial("mtl5").set(ColorAttribute.createDiffuse(pointLight.color));
+
+        camera.position.x = player.position.x;
+        camera.position.z = player.position.z - 3f;
+        camera.lookAt(camera.position.x, 0f, camera.position.z + 10f);
+        camera.update();
 
         final float offset = 2.0f;
         final float terrainHeight = clodTerrain.getHeightValue((int) camera.position.x, (int) camera.position.z);
@@ -98,9 +110,7 @@ public class Scene implements Disposable {
         modelBatch.begin(camera);
         modelBatch.render(skydome.getModelInstance());
         modelBatch.render(sphereInstance);
-        modelBatch.render(shipInstance, environment);
-//        modelBatch.render(terrain);
-//        modelBatch.render(clodTerrain);
+        player.render(modelBatch, environment);
         modelBatch.end();
 
         rc.begin();

@@ -2,6 +2,7 @@ package com.lando.systems.July15GAM.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -38,18 +39,18 @@ public class AtmosphereScreen extends ScreenAdapter {
 
         sceneCamera = new PerspectiveCamera(67f, July15GAM.win_width, July15GAM.win_height);
         sceneCamera.position.set(0f, 5f, 0f);
-        sceneCamera.lookAt(10f, 5f, 10f);
         sceneCamera.near = 1f;
         sceneCamera.far = 300f;
         sceneCamera.update();
         camController = new FirstPersonCameraController(sceneCamera);
         camController.setVelocity(CAM_SPEED);
-        Gdx.input.setInputProcessor(camController);
 
         scene = new Scene(game);
 
         batch = Assets.batch;
         modelBatch = Assets.modelBatch;
+
+        enableInput();
     }
 
     @Override
@@ -92,9 +93,23 @@ public class AtmosphereScreen extends ScreenAdapter {
     public void resize(int width, int height) {}
 
     @Override
-    public void pause() {}
+    public void pause() {
+        disableInput();
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+        enableInput();
+    }
+
+    private void enableInput() {
+        InputMultiplexer inputMux = new InputMultiplexer();
+        inputMux.addProcessor(camController);
+        Gdx.input.setInputProcessor(inputMux);
+    }
+
+    private void disableInput() {
+        Gdx.input.setInputProcessor(null);
+    }
 
 }
