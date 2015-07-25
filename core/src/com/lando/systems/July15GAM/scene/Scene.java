@@ -38,6 +38,7 @@ public class Scene implements Disposable {
     ModelInstance        cubeInstance;
     ModelInstance        planeInstance;
     ModelInstance        sphereInstance;
+    ModelInstance        shipInstance;
     float                cubeRotAngle;
     float                sphereRotAngle;
     Terrain              terrain;
@@ -78,7 +79,7 @@ public class Scene implements Disposable {
             sphereRotAngle -= 360f;
         }
         sphereInstance.transform.setToTranslation(pointLight.position);
-        sphereInstance.getMaterial("mtl4").set(ColorAttribute.createDiffuse(pointLight.color));
+//        sphereInstance.getMaterial("mtl5").set(ColorAttribute.createDiffuse(pointLight.color));
 
         final float offset = 2.0f;
         final float terrainHeight = clodTerrain.getHeightValue((int) camera.position.x, (int) camera.position.z);
@@ -97,6 +98,7 @@ public class Scene implements Disposable {
         modelBatch.begin(camera);
         modelBatch.render(skydome.getModelInstance());
         modelBatch.render(sphereInstance);
+        modelBatch.render(shipInstance, environment);
 //        modelBatch.render(terrain);
 //        modelBatch.render(clodTerrain);
         modelBatch.end();
@@ -161,6 +163,10 @@ public class Scene implements Disposable {
         cubeInstance = new ModelInstance(cubeModel);
         planeInstance = new ModelInstance(planeModel);
         sphereInstance = new ModelInstance(sphereModel);
+
+        shipInstance = new ModelInstance(Assets.shipModel);
+        shipInstance.transform.translate(5f, 3f, 5f);
+        shipInstance.transform.rotate(0f, 1f, 0f, 45f);
 
         final int numChunksWide = 1;
         final int numChunksLong = 2;

@@ -31,6 +31,7 @@ public class Assets {
 
     private static AssetManager assetManager;
     public static  Model        skydomeModel;
+    public static  Model        shipModel;
 
     public static void load() {
         batch = new SpriteBatch();
@@ -51,8 +52,10 @@ public class Assets {
 
         assetManager = new AssetManager();
         assetManager.load("models/skydome.g3db", Model.class);
+        assetManager.load("models/ship.obj", Model.class);
         assetManager.finishLoading();
         skydomeModel = assetManager.get("models/skydome.g3db");
+        shipModel = assetManager.get("models/ship.obj");
     }
 
     public static void dispose() {
