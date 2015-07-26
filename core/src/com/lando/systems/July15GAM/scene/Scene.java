@@ -18,7 +18,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.lando.systems.July15GAM.July15GAM;
-import com.lando.systems.July15GAM.Player;
+import com.lando.systems.July15GAM.entities.Player;
 import com.lando.systems.July15GAM.accessors.ColorAccessor;
 import com.lando.systems.July15GAM.accessors.Vector3Accessor;
 import com.lando.systems.July15GAM.scene.terrain.CLODTerrain;

@@ -1,4 +1,4 @@
-package com.lando.systems.July15GAM;
+package com.lando.systems.July15GAM.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
