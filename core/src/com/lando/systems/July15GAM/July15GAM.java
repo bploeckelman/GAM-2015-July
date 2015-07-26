@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.lando.systems.July15GAM.accessors.*;
 import com.lando.systems.July15GAM.screens.AtmosphereScreen;
+import com.lando.systems.July15GAM.screens.InvadersScreen;
 import com.lando.systems.July15GAM.screens.TestScreen;
 import com.lando.systems.July15GAM.utils.Assets;
 
@@ -27,7 +28,8 @@ public class July15GAM extends Game {
 		Tween.registerAccessor(Vector2.class, new Vector2Accessor());
 		Tween.registerAccessor(Vector3.class, new Vector3Accessor());
 
-		setScreen(new AtmosphereScreen(this));
+		setScreen(new InvadersScreen(this));
+//		setScreen(new AtmosphereScreen(this));
 //		setScreen(new TestScreen(this));
 	}
 
